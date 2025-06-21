@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <div>
+            <input type="text" id="longUrl" placeholder="Enter long URL" value="https://www.youtube.com">
+            <button onclick="shortenUrl()">Shorten URL</button>
+        </div>
+        <div id="result">
+            <p>Short URL: <a id="shortUrl" href="#" target="_blank"></a></p>
+            <p>Original URL: <span id="originalUrl"></span></p>
+            <button onclick="testRedirect()">Test Redirect</button>
+            <div id="testResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentShortUrl = '';
+
+        async function shortenUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            if (!longUrl) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/shorten', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ longUrl })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentShortUrl = data.shortUrl;
+                    document.getElementById('shortUrl').textContent = data.shortUrl;
+                    document.getElementById('shortUrl').href = data.shortUrl;
+                    document.getElementById('originalUrl').textContent = data.originalUrl;
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('testResult').textContent = '';
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please check the console for details.');
+            }
+        }
+
+        async function testRedirect() {
+            if (!currentShortUrl) {
+                alert('No short URL available');
+                return;
+            }
+
+            const testResult = document.getElementById('testResult');
+            testResult.textContent = 'Testing redirect...';
+            testResult.style.color = 'black';
+
+            try {
+                const response = await fetch(currentShortUrl, {
+                    method: 'GET',
+                    redirect: 'manual'
+                });
+
+                if (response.redirected) {
+                    testResult.textContent = `Redirect successful to: ${response.url}`;
+                    testResult.style.color = 'green';
+                    window.open(currentShortUrl, '_blank');
+                } else {
+                    testResult.textContent = `Unexpected response status: ${response.status} ${response.statusText}`;
+                    testResult.style.color = 'red';
+                }
+            } catch (error) {
+                testResult.textContent = `Error: ${error.message}`;
+                testResult.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
