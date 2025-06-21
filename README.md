@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # URL Shortener API
 
 A complete RESTful API service that shortens long URLs, built with Node.js, Express, and MongoDB (with in-memory option).
@@ -184,3 +185,6 @@ The API returns appropriate HTTP status codes and error messages in the followin
 ## License
 
 MIT
+=======
+# url_shortener
+>>>>>>> 699b820ecd34ec9e5e3d4e7b36d5a33c75908ccf
